@@ -122,25 +122,103 @@ def run_promptfoo_eval(skill_path: str, eval_config: str) -> dict:
 
 def calculate_skill_level(structure: dict, eval_result: dict) -> str:
     """计算 Skill 能力等级"""
+    # 安全获取字典值，避免 KeyError
+    has_skill_md = structure.get("has_skill_md", False)
+    has_scripts = structure.get("has_scripts", False)
+    has_evals = structure.get("has_evals", False)
+    has_tests = structure.get("has_tests", False)
+    has_readme = structure.get("has_readme", False)
+    
     # Level 3: 生产就绪
-    if (structure["has_skill_md"] and 
-        structure["has_scripts"] and 
-        structure["has_evals"] and 
-        structure["has_tests"] and
-        structure["has_readme"]):
+    if (has_skill_md and has_scripts and has_evals and has_tests and has_readme):
         return "Level 3"
     
     # Level 2: 稳定可靠
-    if (structure["has_skill_md"] and 
-        structure["has_scripts"] and 
-        structure["has_evals"]):
+    if (has_skill_md and has_scripts and has_evals):
         return "Level 2"
     
     # Level 1: 基础可用
-    if structure["has_skill_md"]:
+    if has_skill_md:
         return "Level 1"
     
     return "未评级"
+
+
+def generate_markdown_report(skill_info: dict, structure: dict, eval_result: dict, timestamp: str) -> str:
+    """生成 Markdown 格式报告"""
+    skill_level = calculate_skill_level(structure, eval_result)
+    
+    # 安全获取字典值
+    check_mark = lambda key: '✅' if structure.get(key, False) else '❌'
+    
+    report = f"""# Skill 评估报告
+
+**评估时间**: {timestamp}
+
+---
+
+## Skill 信息
+
+| 字段 | 值 |
+|------|-----|
+| 名称 | {skill_info.get('name', 'N/A')} |
+| 版本 | {skill_info.get('version', 'N/A')} |
+| 描述 | {skill_info.get('description', 'N/A')} |
+| 作者 | {skill_info.get('author', 'N/A')} |
+| 标签 | {', '.join(skill_info.get('tags', []))} |
+
+---
+
+## 能力等级：**{skill_level}**
+
+---
+
+## 目录结构检查
+
+| 检查项 | 状态 |
+|--------|------|
+| SKILL.md | {check_mark('has_skill_md')} |
+| scripts/ | {check_mark('has_scripts')} |
+| evals/ | {check_mark('has_evals')} |
+| tests/ | {check_mark('has_tests')} |
+| README.md | {check_mark('has_readme')} |
+
+---
+
+## 评估结果
+
+{json.dumps(eval_result, ensure_ascii=False, indent=2) if eval_result else '暂无评估数据'}
+
+---
+
+## 改进建议
+
+"""
+    
+    # 根据检查结果生成建议
+    suggestions = []
+    
+    if not structure.get("has_skill_md", False):
+        suggestions.append("1. **【高优先级】** 添加 SKILL.md 文件，定义 Skill 职责和工作流程")
+    
+    if not structure.get("has_scripts", False):
+        suggestions.append("2. **【高优先级】** 添加 scripts/ 目录，实现 Skill 核心功能")
+    
+    if not structure.get("has_evals", False):
+        suggestions.append("3. **【中优先级】** 添加 evals/ 目录，配置基准测试")
+    
+    if not structure.get("has_tests", False):
+        suggestions.append("4. **【中优先级】** 添加 tests/ 目录，编写测试用例")
+    
+    if not structure.get("has_readme", False):
+        suggestions.append("5. **【低优先级】** 添加 README.md 文件，完善使用说明")
+    
+    if suggestions:
+        report += "\n".join(suggestions)
+    else:
+        report += "✅ Skill 结构完整，无需改进"
+    
+    return report
 
 
 def generate_report(skill_path: str, structure: dict, skill_info: dict, eval_result: dict, output_dir: str, output_format: str):
@@ -169,80 +247,6 @@ def generate_report(skill_path: str, structure: dict, skill_info: dict, eval_res
     
     logger.info(f"评估报告已保存到：{report_file}")
     return report_file
-
-
-def generate_markdown_report(skill_info: dict, structure: dict, eval_result: dict, timestamp: str) -> str:
-    """生成 Markdown 格式报告"""
-    skill_level = calculate_skill_level(structure, eval_result)
-    
-    report = f"""# Skill 评估报告
-
-**评估时间**: {timestamp}
-
----
-
-## Skill 信息
-
-| 字段 | 值 |
-|------|-----|
-| 名称 | {skill_info.get('name', 'N/A')} |
-| 版本 | {skill_info.get('version', 'N/A')} |
-| 描述 | {skill_info.get('description', 'N/A')} |
-| 作者 | {skill_info.get('author', 'N/A')} |
-| 标签 | {', '.join(skill_info.get('tags', []))} |
-
----
-
-## 能力等级：**{skill_level}**
-
----
-
-## 目录结构检查
-
-| 检查项 | 状态 |
-|--------|------|
-| SKILL.md | {'✅' if structure['has_skill_md'] else '❌'} |
-| scripts/ | {'✅' if structure['has_scripts'] else '❌'} |
-| evals/ | {'✅' if structure['has_evals'] else '❌'} |
-| tests/ | {'✅' if structure['has_tests'] else '❌'} |
-| README.md | {'✅' if structure['has_readme'] else '❌'} |
-
----
-
-## 评估结果
-
-{json.dumps(eval_result, ensure_ascii=False, indent=2) if eval_result else '暂无评估数据'}
-
----
-
-## 改进建议
-
-"""
-    
-    # 根据检查结果生成建议
-    suggestions = []
-    
-    if not structure["has_skill_md"]:
-        suggestions.append("1. **【高优先级】** 添加 SKILL.md 文件，定义 Skill 职责和工作流程")
-    
-    if not structure["has_scripts"]:
-        suggestions.append("2. **【高优先级】** 添加 scripts/ 目录，实现 Skill 核心功能")
-    
-    if not structure["has_evals"]:
-        suggestions.append("3. **【中优先级】** 添加 evals/ 目录，配置基准测试")
-    
-    if not structure["has_tests"]:
-        suggestions.append("4. **【中优先级】** 添加 tests/ 目录，编写测试用例")
-    
-    if not structure["has_readme"]:
-        suggestions.append("5. **【低优先级】** 添加 README.md 文件，完善使用说明")
-    
-    if suggestions:
-        report += "\n".join(suggestions)
-    else:
-        report += "✅ Skill 结构完整，无需改进"
-    
-    return report
 
 
 def main():

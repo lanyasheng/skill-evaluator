@@ -1,0 +1,15 @@
+# Level 2 Skill 评估配置
+description: "Level 2 Skill 评估基准"
+
+prompts:
+  - "测试输入：{{input}}"
+
+providers:
+  - id: anthropic:claude-sonnet-4-5-20250929
+
+tests:
+  - vars:
+      input: "正常测试"
+    assert:
+      - type: contains
+        value: "测试"
