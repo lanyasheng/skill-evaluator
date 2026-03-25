@@ -42,14 +42,14 @@ tags: [skill, evaluation, benchmark, red-team, quality, self-improvement]
 3. 识别评估维度和成功标准
 
 ### 阶段 2：基准测试
-1. 加载预定义测试用例库（[references/test-cases.yaml](references/test-cases.yaml)）
+1. 加载预定义测试用例库
 2. 运行正常场景测试
 3. 运行边界场景测试
 4. 计算通过率、准确率、执行时间、成本
 
 ### 阶段 3：红队测试
 1. 生成对抗性测试用例
-2. 测试恶意输入处理能力（SQL 注入、提示词注入等）
+2. 测试恶意输入处理能力
 3. 测试资源限制处理能力
 4. 测试安全漏洞
 
@@ -57,7 +57,7 @@ tags: [skill, evaluation, benchmark, red-team, quality, self-improvement]
 1. 计算能力等级（Level 1/2/3）
 2. 生成质量雷达图
 3. 提供改进建议
-4. 输出评估报告到 `.feedback/` 目录
+4. 输出评估报告
 
 ### 阶段 5：持续改进
 1. 收集用户反馈
@@ -163,7 +163,6 @@ python scripts/publish_to_clawhub.py --skill-path /path/to/skill --level Level2 
 5. 发现的问题列表
 6. 改进建议（按优先级排序）
 7. 测试用例执行详情
-8. 版本历史和评估历史
 
 ## 常见问题
 
@@ -171,7 +170,7 @@ python scripts/publish_to_clawhub.py --skill-path /path/to/skill --level Level2 
 A: 在 `references/test-cases.yaml` 中添加新的测试用例，格式参考现有用例。
 
 ### Q: 如何自定义评估维度权重？
-A: 修改 `evals/skill-eval-config.yaml` 中的 `weights` 配置，或参考 [references/evaluation-standards.md](references/evaluation-standards.md) 的类别权重。
+A: 修改 `evals/skill-eval-config.yaml` 中的 `weights` 配置。
 
 ### Q: 如何导出评估报告？
 A: 评估完成后，报告会自动保存到 `.feedback/{skill-name}-eval-{timestamp}.md`。也可用 `--format json` 导出 JSON。
@@ -184,29 +183,6 @@ A: 借鉴 Karpathy autoresearch 设计：评估 → 小改动 → 再评估 → 
 
 ### Q: 如何发布到 ClawHub？
 A: 使用 `scripts/publish_to_clawhub.py`，会自动验证 Skill 等级、运行安全检查、复制到 ClawHub 目录。
-
-## 测试验证
-
-- ✅ **单元测试**: 19/19 通过（100%）
-- ✅ **红队测试**: 3/3 通过（100%）
-- ✅ **基准数据库**: 15/15 加载成功
-- ✅ **自主改进**: 16.3% 改进幅度
-- ✅ **测试覆盖率**: 92%
-
-详见：[TESTING_REPORT.md](TESTING_REPORT.md)
-
-## 版本历史
-
-- **v1.0.0** (2026-03-25): 初始版本
-  - ✅ 按类别调整权重配置
-  - ✅ 红队测试脚本（5 种攻击测试）
-  - ✅ 自主改进循环（Karpathy Loop）
-  - ✅ 能力演进追踪
-  - ✅ 基准数据库
-  - ✅ 多 Agent 并行评估
-  - ✅ ClawHub 发布集成
-  - ✅ 单元测试（19/19 通过）
-  - ✅ 完整文档（中英文 README）
 
 ---
 
