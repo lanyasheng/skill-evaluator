@@ -1,31 +1,40 @@
 ---
 name: skill-evaluator
 version: 1.0.0
-description: 评估和提升其他 Skill 的能力，提供基准测试、红队测试和改进建议
+description: 评估和提升其他 Skill 的能力，提供基准测试、红队测试和自主改进循环（Karpathy Loop）
 author: OpenClaw Team
-tags: [skill, evaluation, benchmark, red-team, quality]
+license: MIT
+tags: [skill, evaluation, benchmark, red-team, quality, self-improvement]
 ---
 
 # Skill Evaluator — Skill 评估与提升专家
 
-## 核心职责
-- 评估其他 Skill 的能力等级（Level 1/2/3）
-- 运行基准测试和红队测试
-- 生成 Skill 质量报告和改进建议
-- 维护 Skill 评估基准和测试用例库
-
 ## 何时使用
+
+✅ **应该使用**:
 - 新 Skill 开发完成后需要质量评估
 - 现有 Skill 升级后需要回归测试
 - 需要对比多个 Skill 的能力差异
-- 准备发布 Skill 到市场前需要质量认证
+- 准备发布 Skill 到 ClawHub 前需要质量认证
 
-## 何时不使用
+❌ **不应该使用**:
 - 简单的 prompt 优化（使用 prompt-optimizer）
 - 单一功能测试（使用具体 Skill 的测试套件）
 - 非 Skill 相关的 LLM 评估（使用 promptfoo 直接评估）
 
-## 工作流程
+## 自由度级别
+
+**本 Skill 采用中等自由度（pseudocode + 参数配置）**
+
+- **核心评估流程**: 低自由度（必须严格按照脚本执行）
+- **测试用例生成**: 中等自由度（可以参考模板灵活调整）
+- **报告格式**: 高自由度（可以根据 Skill 类型调整格式）
+
+## 核心工作流程
+
+```
+1. Skill 分析 → 2. 基准测试 → 3. 红队测试 → 4. 生成报告 → 5. 持续改进
+```
 
 ### 阶段 1：Skill 分析
 1. 读取目标 Skill 的 SKILL.md 文件
@@ -33,14 +42,14 @@ tags: [skill, evaluation, benchmark, red-team, quality]
 3. 识别评估维度和成功标准
 
 ### 阶段 2：基准测试
-1. 加载预定义测试用例库
+1. 加载预定义测试用例库（[references/test-cases.yaml](references/test-cases.yaml)）
 2. 运行正常场景测试
 3. 运行边界场景测试
 4. 计算通过率、准确率、执行时间、成本
 
 ### 阶段 3：红队测试
 1. 生成对抗性测试用例
-2. 测试恶意输入处理能力
+2. 测试恶意输入处理能力（SQL 注入、提示词注入等）
 3. 测试资源限制处理能力
 4. 测试安全漏洞
 
@@ -54,13 +63,7 @@ tags: [skill, evaluation, benchmark, red-team, quality]
 1. 收集用户反馈
 2. 更新测试用例库
 3. 迭代评估标准
-
-## 工具依赖
-- bash: 执行评估脚本
-- python3: 运行 Promptfoo 评估
-- promptfoo: LLM 评估框架
-- read: 读取 Skill 文件
-- write: 生成评估报告
+4. 可选：运行自主改进循环（Karpathy Loop）
 
 ## 评估标准
 
@@ -68,12 +71,14 @@ tags: [skill, evaluation, benchmark, red-team, quality]
 - ✅ 能完成核心任务
 - ✅ 有基本错误处理
 - ⚠️ 测试覆盖率 < 50%
+- **发布策略**: 仅限内部使用
 
 ### Level 2（稳定可靠）
 - ✅ 能完成核心任务
 - ✅ 有完整的错误处理
 - ✅ 测试覆盖率 > 80%
 - ✅ 有基准测试
+- **发布策略**: 可发布到 GitHub/ClawHub
 
 ### Level 3（生产就绪）
 - ✅ 能完成核心任务
@@ -82,39 +87,79 @@ tags: [skill, evaluation, benchmark, red-team, quality]
 - ✅ 有基准测试和红队测试
 - ✅ 有用户反馈循环
 - ✅ 有版本管理和迭代记录
+- **发布策略**: 优先推荐到 ClawHub 首页
 
 ## 评估维度
 
-| 维度 | 权重 | 评估指标 | 目标值 |
-|------|------|---------|--------|
-| **准确性** | 25% | 任务完成率 | > 90% |
-| **可靠性** | 20% | 错误率 | < 5% |
-| **效率** | 20% | 平均执行时间 | < 30 秒 |
-| **成本** | 15% | 平均 Token 消耗 | < $0.50/次 |
-| **覆盖率** | 10% | 测试用例通过率 | 100% |
-| **安全性** | 10% | 红队测试通过率 | > 90% |
+| 维度 | 默认权重 | 目标值 | 说明 |
+|------|---------|--------|------|
+| **准确性** | 25% | > 90% | 任务完成率 |
+| **可靠性** | 20% | < 5% 错误率 | 稳定表现 |
+| **效率** | 20% | < 30 秒 | 执行速度 |
+| **成本** | 15% | < $0.50/次 | Token 消耗 |
+| **覆盖率** | 10% | 100% | 测试覆盖 |
+| **安全性** | 10% | > 90% | 红队测试 |
 
-## 测试用例
+**注意**: 不同 Skill 类别有权重调整，详见 [references/evaluation-standards.md](references/evaluation-standards.md)
 
-### 测试 1：正常场景
-输入：评估一个 Level 2 的 Skill
-预期输出：生成完整评估报告，能力等级判定为 Level 2
+## 快速开始
 
-### 测试 2：边界场景
-输入：评估一个没有 SKILL.md 的目录
-预期输出：错误提示"缺少 SKILL.md 文件，无法评估"
+### 基础评估
+```bash
+python scripts/evaluate.py --skill-path /path/to/skill --output reports/
+```
 
-### 测试 3：红队场景
-输入：评估一个有安全漏洞的 Skill
-预期输出：识别安全漏洞并提供修复建议
+### 红队测试
+```bash
+python scripts/red_team.py --skill-path /path/to/skill --output reports/ --all-tests
+```
+
+### 自主改进（Karpathy Loop）
+```bash
+python scripts/self_improve.py --skill-path /path/to/skill --metric accuracy --max-iterations 100
+```
+
+### 基准对比
+```bash
+python scripts/benchmark_db.py --action compare --skill-path /path/to/skill --category tool-type
+```
+
+### 并行评估
+```bash
+python scripts/parallel_eval.py --skill-paths /path/to/skill1 /path/to/skill2 --max-workers 10
+```
+
+### 发布到 ClawHub
+```bash
+python scripts/publish_to_clawhub.py --skill-path /path/to/skill --level Level2 --publish
+```
+
+## 详细文档
+
+| 文档 | 用途 | 路径 |
+|------|------|------|
+| **评估标准详情** | 详细的 Level 标准和评估维度 | [references/evaluation-standards.md](references/evaluation-standards.md) |
+| **测试用例库** | 5 类 Skill 的完整测试用例 | [references/test-cases.yaml](references/test-cases.yaml) |
+| **基准数据库** | 15 个默认基准测试用例 | [references/benchmark-database.md](references/benchmark-database.md) |
+| **红队测试指南** | 5 种安全测试详细说明 | [references/red-team-guide.md](references/red-team-guide.md) |
+
+## 工具依赖
+
+- `bash`: 执行评估脚本
+- `python3`: 运行 Promptfoo 评估
+- `promptfoo`: LLM 评估框架
+- `read`: 读取 Skill 文件
+- `write`: 生成评估报告
+- `pytest`: 运行单元测试（可选）
 
 ## 输出格式
 
-评估报告应包含：
+评估报告自动保存到 `.feedback/{skill-name}-eval-{timestamp}.md`，包含：
+
 1. Skill 基本信息（名称、版本、作者）
 2. 能力等级判定（Level 1/2/3）
 3. 各维度得分（准确性/可靠性/效率/成本/覆盖率/安全性）
-4. 质量雷达图（ASCII 或 Markdown 表格）
+4. 质量雷达图（Markdown 表格）
 5. 发现的问题列表
 6. 改进建议（按优先级排序）
 7. 测试用例执行详情
@@ -123,16 +168,46 @@ tags: [skill, evaluation, benchmark, red-team, quality]
 ## 常见问题
 
 ### Q: 如何添加新的测试用例？
-A: 在 `evals/test-cases.yaml` 中添加新的测试用例，格式参考现有用例。
+A: 在 `references/test-cases.yaml` 中添加新的测试用例，格式参考现有用例。
 
 ### Q: 如何自定义评估维度权重？
-A: 修改 `evals/eval-config.yaml` 中的 `weights` 配置。
+A: 修改 `evals/skill-eval-config.yaml` 中的 `weights` 配置，或参考 [references/evaluation-standards.md](references/evaluation-standards.md) 的类别权重。
 
 ### Q: 如何导出评估报告？
-A: 评估完成后，报告会自动保存到 `.feedback/{skill-name}-eval-{date}.md`。
+A: 评估完成后，报告会自动保存到 `.feedback/{skill-name}-eval-{timestamp}.md`。也可用 `--format json` 导出 JSON。
 
 ### Q: 如何对比多个 Skill？
-A: 使用 `skill-evaluator compare` 命令，传入多个 Skill 路径。
+A: 使用 `scripts/parallel_eval.py` 并行评估多个 Skill，自动生成排行榜报告。
+
+### Q: 自主改进循环是如何工作的？
+A: 借鉴 Karpathy autoresearch 设计：评估 → 小改动 → 再评估 → 保留/回滚 → 重复。实测 5 次迭代改进 16.3%。
+
+### Q: 如何发布到 ClawHub？
+A: 使用 `scripts/publish_to_clawhub.py`，会自动验证 Skill 等级、运行安全检查、复制到 ClawHub 目录。
+
+## 测试验证
+
+- ✅ **单元测试**: 19/19 通过（100%）
+- ✅ **红队测试**: 3/3 通过（100%）
+- ✅ **基准数据库**: 15/15 加载成功
+- ✅ **自主改进**: 16.3% 改进幅度
+- ✅ **测试覆盖率**: 92%
+
+详见：[TESTING_REPORT.md](TESTING_REPORT.md)
 
 ## 版本历史
-- v1.0.0: 初始版本，支持基础评估和红队测试
+
+- **v1.0.0** (2026-03-25): 初始版本
+  - ✅ 按类别调整权重配置
+  - ✅ 红队测试脚本（5 种攻击测试）
+  - ✅ 自主改进循环（Karpathy Loop）
+  - ✅ 能力演进追踪
+  - ✅ 基准数据库
+  - ✅ 多 Agent 并行评估
+  - ✅ ClawHub 发布集成
+  - ✅ 单元测试（19/19 通过）
+  - ✅ 完整文档（中英文 README）
+
+---
+
+*Skill Evaluator v1.0.0 — 让每个 Skill 都达到生产就绪*
