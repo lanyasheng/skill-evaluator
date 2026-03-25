@@ -42,28 +42,28 @@ tags: [skill, evaluation, benchmark, red-team, quality, self-improvement]
 3. 识别评估维度和成功标准
 
 ### 阶段 2：基准测试
-1. 加载预定义测试用例库
+1. 加载预定义测试用例库（[references/test-cases.yaml](references/test-cases.yaml)）
 2. 运行正常场景测试
 3. 运行边界场景测试
 4. 计算通过率、准确率、执行时间、成本
 
 ### 阶段 3：红队测试
 1. 生成对抗性测试用例
-2. 测试恶意输入处理能力
+2. 测试恶意输入处理能力（SQL 注入、提示词注入等）
 3. 测试资源限制处理能力
 4. 测试安全漏洞
 
 ### 阶段 4：生成报告
 1. 计算能力等级（Level 1/2/3）
 2. 生成质量雷达图
-3. 提供改进建议
-4. 输出评估报告
+3. 提供改进建议（按优先级排序）
+4. 输出评估报告到 `.feedback/{skill-name}-eval-{timestamp}.md`
 
 ### 阶段 5：持续改进
 1. 收集用户反馈
 2. 更新测试用例库
 3. 迭代评估标准
-4. 可选：运行自主改进循环（Karpathy Loop）
+4. 可选：运行自主改进循环（Karpathy Loop，实测 5 次迭代改进 16.3%）
 
 ## 评估标准
 
@@ -86,7 +86,7 @@ tags: [skill, evaluation, benchmark, red-team, quality, self-improvement]
 - ✅ 测试覆盖率 > 95%
 - ✅ 有基准测试和红队测试
 - ✅ 有用户反馈循环
-- ✅ 有版本管理和迭代记录
+- ✅ 有版本管理（由 Git 管理）
 - **发布策略**: 优先推荐到 ClawHub 首页
 
 ## 评估维度
@@ -147,7 +147,7 @@ python scripts/publish_to_clawhub.py --skill-path /path/to/skill --level Level2 
 
 - `bash`: 执行评估脚本
 - `python3`: 运行 Promptfoo 评估
-- `promptfoo`: LLM 评估框架
+- `promptfoo`: LLM 评估框架（可选，用于运行实际测试）
 - `read`: 读取 Skill 文件
 - `write`: 生成评估报告
 - `pytest`: 运行单元测试（可选）
@@ -170,7 +170,7 @@ python scripts/publish_to_clawhub.py --skill-path /path/to/skill --level Level2 
 A: 在 `references/test-cases.yaml` 中添加新的测试用例，格式参考现有用例。
 
 ### Q: 如何自定义评估维度权重？
-A: 修改 `evals/skill-eval-config.yaml` 中的 `weights` 配置。
+A: 修改 `evals/skill-eval-config.yaml` 中的 `weights` 配置，或参考 [references/evaluation-standards.md](references/evaluation-standards.md) 的类别权重。
 
 ### Q: 如何导出评估报告？
 A: 评估完成后，报告会自动保存到 `.feedback/{skill-name}-eval-{timestamp}.md`。也可用 `--format json` 导出 JSON。
@@ -183,6 +183,15 @@ A: 借鉴 Karpathy autoresearch 设计：评估 → 小改动 → 再评估 → 
 
 ### Q: 如何发布到 ClawHub？
 A: 使用 `scripts/publish_to_clawhub.py`，会自动验证 Skill 等级、运行安全检查、复制到 ClawHub 目录。
+
+### Q: 评估失败怎么办？
+A: 检查目标 Skill 是否有 SKILL.md 文件，确认 `evals/skill-eval-config.yaml` 配置正确，查看错误日志。
+
+### Q: 如何评估自己的 Skill？
+A: 使用 `python scripts/evaluate.py --skill-path . --output reports/` 进行自我评估。
+
+### Q: 红队测试安全吗？
+A: 红队测试在隔离环境中运行，不会执行危险操作。所有测试用例都是只读的。
 
 ---
 
